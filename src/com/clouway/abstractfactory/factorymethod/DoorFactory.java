@@ -3,11 +3,11 @@ package com.clouway.abstractfactory.factorymethod;
 /**
  * @author georgi.hristov@clouway.com
  */
-public class DoorFactory implements HousePartsFactory{
+public class DoorFactory implements HousePartFactory {
 
 
   @Override
-  public HousePartObject createObject() {
+  public HousePart createPart() {
    return new Door();
   }
 }

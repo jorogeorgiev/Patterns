@@ -3,9 +3,9 @@ package com.clouway.abstractfactory.factorymethod;
 /**
  * @author georgi.hristov@clouway.com
  */
-public class FloorFactory implements HousePartsFactory {
+public class FloorFactory implements HousePartFactory {
   @Override
-  public HousePartObject createObject() {
+  public HousePart createPart() {
     return new Floor();
   }
 }

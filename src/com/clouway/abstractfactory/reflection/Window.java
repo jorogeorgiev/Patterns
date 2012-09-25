@@ -3,5 +3,5 @@ package com.clouway.abstractfactory.reflection;
 /**
  * @author georgi.hristov@clouway.com
  */
-public class Window{
+public class Window implements HousePart {
 }

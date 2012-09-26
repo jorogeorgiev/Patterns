@@ -1,8 +1,13 @@
 package com.clouway.observer;
 
+import com.google.common.collect.Lists;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -41,17 +46,50 @@ public class ObjectPoolTest {
   }
 
   @Test
-  public void clientsUsingThePoolAreEqualsToPoolSize(){
+  public void clientsUsingThePoolAreEqualsToPoolSize() throws InstantiationException, IllegalAccessException {
+
+     List<PoolObject> acquiredObjects = Lists.newArrayList();
+
+     int size =10;
+
+     ObjectPool pool = ObjectPool.getInstance();
+
+     pool.buildPool(new PoolObjectImpl(),size);
+
+     for(int i=0;i<=size;i++){
+
+       FakeClient client = new FakeClient(pool);
+
+       acquiredObjects.add(client.returnAcquiredObject());
 
 
+     }
 
+   // System.out.println(Arrays.deepToString(acquiredObjects.toArray()));
 
-
-
+    assertThat(acquiredObjects.size(),is(10));
 
 
   }
 
+  class FakeClient{
+
+    private ObjectPool pool;
+
+    public FakeClient(ObjectPool pool){
+
+      this.pool = pool;
+
+    }
+
+    public PoolObject returnAcquiredObject(){
+
+      return pool.acquire();
+
+    }
+
+
+  }
 
 
 

@@ -1,4 +1,4 @@
-package com.clouway.observer;
+package com.clouway.objectpool;
 
 /**
  * @author georgi.hristov@clouway.com
@@ -6,6 +6,6 @@ package com.clouway.observer;
 public class PoolObjectImpl implements PoolObject {
   @Override
   public void use() {
-    //To change body of implemented methods use File | Settings | File Templates.
+
   }
 }

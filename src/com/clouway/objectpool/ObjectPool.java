@@ -1,9 +1,7 @@
-package com.clouway.observer;
+package com.clouway.objectpool;
 
 import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -40,9 +38,32 @@ public class ObjectPool {
 
   }
 
-  public PoolObject acquire(){
+  public PoolObject acquire() throws NoResourceException {
 
-    return  pool.get(index);
+    try{
+
+      PoolObject   acquiredObject = pool.get(index);
+
+      index++;
+
+      return  acquiredObject;
+
+
+    } catch(IndexOutOfBoundsException i){
+
+      throw new NoResourceException();
+
+    }
+
+
+  }
+
+
+  public void release(){
+
+
+
+
 
   }
 

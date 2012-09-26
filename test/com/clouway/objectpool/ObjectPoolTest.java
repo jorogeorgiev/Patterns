@@ -1,13 +1,13 @@
-package com.clouway.observer;
+package com.clouway.objectpool;
 
+import com.clouway.objectpool.FakeObjectImpl;
+import com.clouway.objectpool.ObjectPool;
+import com.clouway.objectpool.PoolObject;
+import com.clouway.objectpool.PoolObjectImpl;
 import com.google.common.collect.Lists;
-import org.hamcrest.Matcher;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
-
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +33,7 @@ public class ObjectPoolTest {
   // check whether a pool with one type objects is created and no other pool can be created with other type of objects
 
   @Test
-  public void poolCreatesOnePoolWithObjects() throws InstantiationException, IllegalAccessException {
+  public void poolCreatesOnePoolWithObjects() throws InstantiationException, IllegalAccessException, NoResourceException {
 
     ObjectPool pool = ObjectPool.getInstance();
 
@@ -45,12 +45,12 @@ public class ObjectPoolTest {
 
   }
 
-  @Test
-  public void clientsUsingThePoolAreEqualsToPoolSize() throws InstantiationException, IllegalAccessException {
+  @Test (expected = NoResourceException.class)
+  public void clientGetNotificationIfNoResourcesArAvailable() throws InstantiationException, IllegalAccessException, NoResourceException {
 
      List<PoolObject> acquiredObjects = Lists.newArrayList();
 
-     int size =10;
+     int size = 10;
 
      ObjectPool pool = ObjectPool.getInstance();
 
@@ -62,15 +62,15 @@ public class ObjectPoolTest {
 
        acquiredObjects.add(client.returnAcquiredObject());
 
-
      }
 
-   // System.out.println(Arrays.deepToString(acquiredObjects.toArray()));
-
-    assertThat(acquiredObjects.size(),is(10));
-
-
   }
+
+
+
+
+
+
 
   class FakeClient{
 
@@ -82,7 +82,9 @@ public class ObjectPoolTest {
 
     }
 
-    public PoolObject returnAcquiredObject(){
+    public PoolObject returnAcquiredObject() throws NoResourceException {
+
+
 
       return pool.acquire();
 
@@ -90,9 +92,5 @@ public class ObjectPoolTest {
 
 
   }
-
-
-
-
 
 }

@@ -6,7 +6,10 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsSame.sameInstance;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author georgi.hristov@clouway.com
@@ -18,17 +21,12 @@ public class SingletonTest {
   @Test
   public void classCreatesOnlySingleInstance(){
 
-    List<Singleton> singletonList = Lists.newArrayList();
-
     Singleton singleton = Singleton.getInstance();
-
-    singletonList.add(singleton);
 
     Singleton singleton1 = Singleton.getInstance();
 
-    singletonList.add(singleton1);
+    assertThat(singleton1,sameInstance(singleton));
 
-    assertThat(singletonList.get(0),is(singletonList.get(1)));
   }
 
 

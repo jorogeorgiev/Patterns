@@ -20,11 +20,11 @@ public class SingletonTest {
 
     List<Singleton> singletonList = Lists.newArrayList();
 
-    Singleton singleton = new Singleton();
+    Singleton singleton = Singleton.getInstance();
 
     singletonList.add(singleton);
 
-    Singleton singleton1 = new Singleton();
+    Singleton singleton1 = Singleton.getInstance();
 
     singletonList.add(singleton1);
 

@@ -6,6 +6,6 @@ package com.clouway.abstractfactory.reflection;
 
 public interface HousePartFactory {
 
-   HousePart createInstance(String partType);
+   HousePart createInstance(String partType) throws ClassNotFoundException, InstantiationException, IllegalAccessException;
 
 }

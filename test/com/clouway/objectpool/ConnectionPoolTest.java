@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isNotNull;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -39,7 +40,14 @@ public class ConnectionPoolTest {
 
   class Connection {
 
-    void use() {
+    private boolean isAvailable=false;
+
+    void setAvailability(boolean isAvailable){
+      this.isAvailable = isAvailable;
+    }
+
+    boolean isAvailable(){
+      return isAvailable;
     }
 
   }
@@ -55,11 +63,13 @@ public class ConnectionPoolTest {
   }
 
 
+
+
   class Client {
 
     private Connection connection;
 
-    private boolean isAcquired = false;
+    private boolean isAcquired=false;
 
     private Server server;
 
@@ -92,7 +102,7 @@ public class ConnectionPoolTest {
 
 
   @Test
-  public void serverDispatchConnectionToClient() {
+  public void clientReceiveConnection() {
 
     acquireConnections(1);
 
@@ -101,7 +111,7 @@ public class ConnectionPoolTest {
   }
 
   @Test
-  public void clientAcquiersOnlyOneActiveConnection() {
+  public void serverDispatchOnlyOneConnectionToClient() {
 
     acquireConnections(2);
 

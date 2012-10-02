@@ -4,11 +4,15 @@ import org.junit.Test;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author georgi.hristov@clouway.com
@@ -17,31 +21,36 @@ import static org.mockito.Mockito.mock;
 
 public class ConnectionPoolTest {
 
- class Connection{
+  class Connection {
 
-   void use() {
-     //To change body of created methods use File | Settings | File Templates.
-   }
+    void use() {
+    };
 
- }
 
-  interface Server{
-
-   Connection dispatchConnection();
 
   }
 
 
-  class Client{
+  interface Server {
+
+    Connection dispatchConnection();
+
+    void releaseConnection(Connection connection);
+
+
+  }
+
+
+  class Client {
 
     private Connection connection;
 
-    private Boolean acquired=false;
+    private boolean isAcquired = false;
 
     private Server server;
 
 
-    public void connectTo(Server server){
+    public void connectTo(Server server) {
 
       this.server = server;
 
@@ -49,15 +58,19 @@ public class ConnectionPoolTest {
 
     void acquireConnection() {
 
-       connection=server.dispatchConnection();
+      if(!isAcquired){
 
-       acquired=true;
+        connection = server.dispatchConnection();
+
+        isAcquired = true;
+
+      }
 
     }
 
-    Boolean hasAcquiredConnection(){
+    Boolean hasAcquiredConnection() {
 
-      return acquired;
+      return (connection != null);
 
     }
 
@@ -65,19 +78,40 @@ public class ConnectionPoolTest {
 
 
   @Test
-  public void serverDispatchConnectionToClient(){
+  public void serverDispatchConnectionToClient() {
 
-      Server server = mock(Server.class);
+    Server server = mock(Server.class);
 
-      Client client = new Client();
+    Client client = new Client();
 
-      client.connectTo(server);
+    client.connectTo(server);
 
-      client.acquireConnection();
+    doReturn(new Connection()).when(server).dispatchConnection();
 
-      doReturn(new Connection()).when(server).dispatchConnection();
+    client.acquireConnection();
 
-      assertTrue(client.hasAcquiredConnection());
+    verify(server, times(1)).dispatchConnection();
+
+    assertTrue(client.hasAcquiredConnection());
+
+  }
+
+  @Test
+  public void clientAcquiersOnlyOneActiveConnection(){
+
+    Server server = mock(Server.class);
+
+    Client client = new Client();
+
+    client.connectTo(server);
+
+    doReturn(new Connection()).when(server).dispatchConnection();
+
+    client.acquireConnection();
+
+    client.acquireConnection();
+
+    verify(server,times(1)).dispatchConnection();
 
   }
 

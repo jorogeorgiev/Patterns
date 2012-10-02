@@ -1,5 +1,6 @@
 package com.clouway.objectpool;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -10,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -21,12 +21,26 @@ import static org.mockito.Mockito.verify;
 
 public class ConnectionPoolTest {
 
+  private Server server;
+  private Client client;
+
+
+  @Before
+  public void setUp() {
+
+    server = mock(Server.class);
+
+    client = new Client();
+
+    client.connectTo(server);
+
+  }
+
+
   class Connection {
 
     void use() {
-    };
-
-
+    }
 
   }
 
@@ -58,7 +72,7 @@ public class ConnectionPoolTest {
 
     void acquireConnection() {
 
-      if(!isAcquired){
+      if (!isAcquired) {
 
         connection = server.dispatchConnection();
 
@@ -80,38 +94,32 @@ public class ConnectionPoolTest {
   @Test
   public void serverDispatchConnectionToClient() {
 
-    Server server = mock(Server.class);
-
-    Client client = new Client();
-
-    client.connectTo(server);
-
-    doReturn(new Connection()).when(server).dispatchConnection();
-
-    client.acquireConnection();
-
-    verify(server, times(1)).dispatchConnection();
+    acquireConnections(1);
 
     assertTrue(client.hasAcquiredConnection());
 
   }
 
   @Test
-  public void clientAcquiersOnlyOneActiveConnection(){
+  public void clientAcquiersOnlyOneActiveConnection() {
 
-    Server server = mock(Server.class);
+    acquireConnections(2);
 
-    Client client = new Client();
+    verify(server, times(1)).dispatchConnection();
 
-    client.connectTo(server);
+  }
+
+
+  private void acquireConnections(int connectionCount) {
 
     doReturn(new Connection()).when(server).dispatchConnection();
 
-    client.acquireConnection();
+    for(int i=0;i<connectionCount;i++){
 
-    client.acquireConnection();
+      client.acquireConnection();
 
-    verify(server,times(1)).dispatchConnection();
+      client.acquireConnection();
+    }
 
   }
 

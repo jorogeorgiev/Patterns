@@ -2,8 +2,8 @@ package com.clouway.objectpool;
 
 import org.junit.Test;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * @author georgi.hristov@clouway.com
@@ -12,20 +12,21 @@ import static org.mockito.Mockito.verify;
 
 public class ConnectionPoolTest {
 
+
+
   @Test
-  public void serverDispatchConnectionToClient() {
+  public void serverDispatchesConnectionToClient(){
 
-    Server server = mock(Server.class);
+       Connection connection;
 
-    Client client  = new Client();
+       Server server = new Server();
 
-    client.connectTo(server);
+       connection = server.dispatchConnection();
 
-    client.acquiteConnection();
-
-    verify(server).dispatchConnection();
+       assertTrue(connection != null);
 
   }
+
 
 
 }

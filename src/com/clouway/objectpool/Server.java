@@ -3,9 +3,13 @@ package com.clouway.objectpool;
 /**
  * @author georgi.hristov@clouway.com
  */
-public interface Server {
+public class Server {
 
-  Connection dispatchConnection();
+  Connection dispatchConnection() {
+
+    return new Connection();
+
+  }
 
 
 }

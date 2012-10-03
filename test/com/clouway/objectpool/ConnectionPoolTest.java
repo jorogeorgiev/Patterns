@@ -2,11 +2,9 @@ package com.clouway.objectpool;
 
 import com.google.common.collect.Lists;
 import org.junit.Test;
+import sun.org.mozilla.javascript.internal.Context;
 
 import java.util.List;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 
@@ -17,40 +15,94 @@ import static org.junit.Assert.assertTrue;
 
 public class ConnectionPoolTest {
 
+  private Server server;
+
+  interface CallBack{
+
+    Connection getConnection();
+
+  }
+
+  class CreateNewInstance implements CallBack{
 
 
-  @Test
-  public void serverDispatchesConnectionToClient(){
+    @Override
+    public Connection getConnection() {
+      return new Active();
+    }
+  }
 
-       Connection connection;
 
-       Server server = new Server();
+  class InstanceFromServer implements CallBack{
 
-       connection = server.dispatchConnection();
-
-       assertTrue(connection != null);
+    @Override
+    public Connection getConnection() {
+      return server.dispatchConnection();
+    }
 
   }
 
 
+
   @Test
-  public void serverDispatchesTenConnections(){
+  public void serverDispatchesActiveConnectionToClient(){
+
+    server = new Server(setUpAvailableConnections(1));
+
+    assertTrue(acquireConnections(1).get(0) instanceof Active);
+
+  }
+
+
+
+
+  @Test
+  public void serverReturnsInactiveConnectionWhenActivesAreExceeded(){
+
+    server = new Server(setUpAvailableConnections(10));
+
+    assertTrue(acquireConnections(20).get(11) instanceof Inactive);
+
+  }
+
+
+
+  @Test
+  public void serverReturnsInactiveConnectionWhenNoActivesAreSet(){
+
+    server = new Server(setUpAvailableConnections(0));
+
+    assertTrue(acquireConnections(1).get(0) instanceof Inactive);
+
+  }
+
+
+
+
+  private List<Connection> acquireConnections(int connectionsToAcquire) {
+
+    return getConnection(connectionsToAcquire, new InstanceFromServer());
+
+  }
+
+  private List<Connection> setUpAvailableConnections(int numberAvailableConnections ) {
+
+    return getConnection(numberAvailableConnections, new CreateNewInstance());
+
+  }
+
+
+  private List<Connection> getConnection(int connectionsToAcquire , CallBack connection) {
 
     List<Connection> connections = Lists.newArrayList();
 
-    Server server = new Server();
+    for(int i=0;i<=connectionsToAcquire;i++){
 
-    for(int i=1;i<=20;i++){
-
-      connections.add(server.dispatchConnection());
+      connections.add(connection.getConnection());
 
     }
-
-    assertThat(connections.size(),is(10));
+    return connections;
 
   }
-
-
-
 
 }

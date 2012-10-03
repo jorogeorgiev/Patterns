@@ -1,10 +1,13 @@
 package com.clouway.objectpool;
 
 import com.google.common.collect.Lists;
+import org.hamcrest.Matcher;
 import org.junit.Test;
-import sun.org.mozilla.javascript.internal.Context;
-
 import java.util.List;
+
+import static com.sun.org.apache.xerces.internal.util.PropertyState.is;
+import static org.hamcrest.core.IsSame.sameInstance;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 
@@ -47,32 +50,22 @@ public class ConnectionPoolTest {
   @Test
   public void serverDispatchesActiveConnectionToClient(){
 
-    server = new Server(setUpAvailableConnections(1));
-
-    assertTrue(acquireConnections(1).get(0) instanceof Active);
+    assertConnectionType(1,1,0,Active.class);
 
   }
-
-
-
 
   @Test
   public void serverReturnsInactiveConnectionWhenActivesAreExceeded(){
 
-    server = new Server(setUpAvailableConnections(10));
-
-    assertTrue(acquireConnections(20).get(11) instanceof Inactive);
+    assertConnectionType(10,20,11,Inactive.class);
 
   }
-
 
 
   @Test
   public void serverReturnsInactiveConnectionWhenNoActivesAreSet(){
 
-    server = new Server(setUpAvailableConnections(0));
-
-    assertTrue(acquireConnections(1).get(0) instanceof Inactive);
+    assertConnectionType(0,1,0,Inactive.class);
 
   }
 
@@ -104,5 +97,15 @@ public class ConnectionPoolTest {
     return connections;
 
   }
+
+
+  private void assertConnectionType(int availableConnections, int acquiredConnections , int connectionNumber , Class classType) {
+
+    server = new Server(setUpAvailableConnections(availableConnections));
+
+    assertTrue(acquireConnections(acquiredConnections).get(connectionNumber).getClass().equals(classType));
+
+  }
+
 
 }

@@ -29,6 +29,8 @@ public class Server {
 
         connectionToDispatch = connection;
 
+        break;
+
       } else {
 
         connectionToDispatch = new Inactive();
@@ -42,21 +44,27 @@ public class Server {
    }
 
 
-  public void release(Connection conncetionToRelease) {
+  public void release(Connection connectionToRelease) {
+
+    Connection abs =null;
 
     for(Connection connection : connections){
 
-      if(conncetionToRelease==connection){
+      if(connectionToRelease==connection && !connectionToRelease.isAvailable()){
 
-        conncetionToRelease.defineAvailability(true);
-
-      }
-
-      else{
-
-        throw new UnknownConnectionException();
+        abs = connectionToRelease;
 
       }
+
+    }
+
+    if(abs!=null){
+
+      abs.defineAvailability(true);
+
+    } else{
+
+      throw new UnknownConnectionException();
 
     }
 

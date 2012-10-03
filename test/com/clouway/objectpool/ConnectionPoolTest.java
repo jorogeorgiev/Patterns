@@ -1,18 +1,8 @@
 package com.clouway.objectpool;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.isNotNull;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -22,115 +12,20 @@ import static org.mockito.Mockito.verify;
 
 public class ConnectionPoolTest {
 
-  private Server server;
-  private Client client;
+  @Test
+  public void serverDispatchConnectionToClient() {
 
+    Server server = mock(Server.class);
 
-  @Before
-  public void setUp() {
-
-    server = mock(Server.class);
-
-    client = new Client();
+    Client client  = new Client();
 
     client.connectTo(server);
 
-  }
+    client.acquiteConnection();
 
-
-  class Connection {
-
-    private boolean isAvailable=false;
-
-    void setAvailability(boolean isAvailable){
-      this.isAvailable = isAvailable;
-    }
-
-    boolean isAvailable(){
-      return isAvailable;
-    }
+    verify(server).dispatchConnection();
 
   }
 
-
-  interface Server {
-
-    Connection dispatchConnection();
-
-    void releaseConnection(Connection connection);
-
-
-  }
-
-
-
-
-  class Client {
-
-    private Connection connection;
-
-    private boolean isAcquired=false;
-
-    private Server server;
-
-
-    public void connectTo(Server server) {
-
-      this.server = server;
-
-    }
-
-    void acquireConnection() {
-
-      if (!isAcquired) {
-
-        connection = server.dispatchConnection();
-
-        isAcquired = true;
-
-      }
-
-    }
-
-    Boolean hasAcquiredConnection() {
-
-      return (connection != null);
-
-    }
-
-  }
-
-
-  @Test
-  public void clientReceiveConnection() {
-
-    acquireConnections(1);
-
-    assertTrue(client.hasAcquiredConnection());
-
-  }
-
-  @Test
-  public void serverDispatchOnlyOneConnectionToClient() {
-
-    acquireConnections(2);
-
-    verify(server, times(1)).dispatchConnection();
-
-  }
-
-
-  private void acquireConnections(int connectionCount) {
-
-    doReturn(new Connection()).when(server).dispatchConnection();
-
-    for(int i=0;i<connectionCount;i++){
-
-      client.acquireConnection();
-
-      client.acquireConnection();
-    }
-
-  }
 
 }

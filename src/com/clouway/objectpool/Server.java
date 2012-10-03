@@ -42,4 +42,25 @@ public class Server {
    }
 
 
+  public void release(Connection conncetionToRelease) {
+
+    for(Connection connection : connections){
+
+      if(conncetionToRelease==connection){
+
+        conncetionToRelease.defineAvailability(true);
+
+      }
+
+      else{
+
+        throw new UnknownConnectionException();
+
+      }
+
+    }
+
+
+
+  }
 }

@@ -3,8 +3,6 @@ package com.clouway.objectpool;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 import java.util.List;
-
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 
@@ -72,11 +70,11 @@ public class ConnectionPoolTest {
   }
 
   @Test
-  public void serverDoesntDispatchSameConnectionTwice(){
+  public void serverDoesNotDispatchSameConnectionTwice(){
 
     server = new Server(setUpAvailableConnections(1));
 
-    Connection connection = server.dispatchConnection();
+    server.dispatchConnection();
 
     Connection connection2 = server.dispatchConnection();
 
@@ -84,7 +82,45 @@ public class ConnectionPoolTest {
 
   }
 
+  @Test
+  public void serverReleasesAConnection(){
 
+    server = new Server(setUpAvailableConnections(1));
+
+    Connection connection1 = server.dispatchConnection();
+
+    server.release(connection1);
+
+    Connection connection2 = server.dispatchConnection();
+
+    server.release(connection2);
+
+    Connection connection3 = server.dispatchConnection();
+
+    server.release(connection3);
+
+    server.release(connection3);
+
+    Connection connection4 = server.dispatchConnection();
+
+    assertTrue(connection4.getClass().equals(Active.class));
+
+  }
+
+
+
+  @Test(expected = UnknownConnectionException.class)
+
+  public void serverThrowExceptionOnUnknownConnectionRelease(){
+
+    server = new Server(setUpAvailableConnections(1));
+
+    Connection connection = new Active() ;
+
+    server.release(connection);
+
+
+  }
 
 
   private List<Connection> acquireConnections(int connectionsToAcquire) {

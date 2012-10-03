@@ -7,7 +7,7 @@ public class Server {
 
   Connection dispatchConnection() {
 
-    return new Connection();
+    return new ConnectionImpl();
 
   }
 

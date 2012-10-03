@@ -7,38 +7,39 @@ import java.util.List;
  */
 public class Server {
 
-  private List<Connection> availableConnections;
-
-  private Connection connection;
-
-  private int index = 0;
+  private List<Connection> connections;
 
 
-  public Server(List<Connection> availableConnections){
+  public Server(List<Connection> connections){
 
-    this.availableConnections = availableConnections;
+     this.connections = connections;
 
   }
 
 
   Connection dispatchConnection() {
 
-    if (index < availableConnections.size() && availableConnections.size()>1) {
+    Connection connectionToDispatch = new Inactive();
 
-      connection = availableConnections.get(index);
+    for (Connection connection : connections) {
 
-      index++;
+      if (connection.isAvailable()) {
 
-      return connection;
+        connection.defineAvailability(false);
 
-    } else {
+        connectionToDispatch = connection;
 
-      return new Inactive();
+      } else {
+
+        connectionToDispatch = new Inactive();
+
+      }
 
     }
 
+     return connectionToDispatch;
 
-  }
+   }
 
 
 }

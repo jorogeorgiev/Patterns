@@ -1,12 +1,9 @@
 package com.clouway.objectpool;
 
 import com.google.common.collect.Lists;
-import org.hamcrest.Matcher;
 import org.junit.Test;
 import java.util.List;
 
-import static com.sun.org.apache.xerces.internal.util.PropertyState.is;
-import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -31,8 +28,11 @@ public class ConnectionPoolTest {
 
     @Override
     public Connection getConnection() {
+
       return new Active();
+
     }
+
   }
 
 
@@ -40,7 +40,9 @@ public class ConnectionPoolTest {
 
     @Override
     public Connection getConnection() {
+
       return server.dispatchConnection();
+
     }
 
   }
@@ -55,17 +57,30 @@ public class ConnectionPoolTest {
   }
 
   @Test
-  public void serverReturnsInactiveConnectionWhenActivesAreExceeded(){
+  public void serverDispatchesInactiveConnectionWhenActivesAreExceeded(){
 
-    assertConnectionType(10,20,11,Inactive.class);
+    assertConnectionType(10,20,10,Inactive.class);
 
   }
 
 
   @Test
-  public void serverReturnsInactiveConnectionWhenNoActivesAreSet(){
+  public void serverDispatchesInactiveConnectionWhenNoActivesAreSet(){
 
-    assertConnectionType(0,1,0,Inactive.class);
+    assertConnectionType(0, 1, 0, Inactive.class);
+
+  }
+
+  @Test
+  public void serverDoesntDispatchSameConnectionTwice(){
+
+    server = new Server(setUpAvailableConnections(1));
+
+    Connection connection = server.dispatchConnection();
+
+    Connection connection2 = server.dispatchConnection();
+
+    assertTrue(connection2.getClass().equals(Inactive.class));
 
   }
 
@@ -89,7 +104,7 @@ public class ConnectionPoolTest {
 
     List<Connection> connections = Lists.newArrayList();
 
-    for(int i=0;i<=connectionsToAcquire;i++){
+    for(int i=0;i<connectionsToAcquire;i++){
 
       connections.add(connection.getConnection());
 

@@ -3,8 +3,7 @@ package com.clouway.objectpool;
 /**
  * @author georgi.hristov@clouway.com
  */
-public class Active implements Connection{
-
+public class TypeConnectionImpl implements TypeConnection {
   private boolean available =true;
 
   @Override
@@ -21,7 +20,7 @@ public class Active implements Connection{
   }
 
   @Override
-  public void exploit() {
+  public void use() {
+   //TO DO smth
   }
-
 }

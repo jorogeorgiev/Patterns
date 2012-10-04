@@ -1,2 +1,2 @@
- - only up to 10 sessions/connection can be handled at a time
- - when connection is not available an error is returned
+ - only up to 10 sessions/connection1 can be handled at a time
+ - when connection1 is not available an error is returned

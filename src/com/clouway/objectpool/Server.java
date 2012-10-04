@@ -7,21 +7,22 @@ import java.util.List;
  */
 public class Server {
 
-  private List<Connection> connections;
 
+  private List<TypeConnection> connections;
 
-  public Server(List<Connection> connections){
+  int availableConnection = 0;
 
-     this.connections = connections;
+  public Server(List<TypeConnection> connections) {
+
+    this.connections = connections;
 
   }
 
-
   Connection dispatchConnection() {
 
-    Connection connection = new Inactive();
+    Connection connection = new RefusedConnection();
 
-    for (Connection currentConnection : connections) {
+    for (TypeConnection currentConnection : connections) {
 
       if (currentConnection.isAvailable()) {
 
@@ -35,18 +36,18 @@ public class Server {
 
     }
 
-     isNull(connection);
+    isNull(connection);
 
-     return connection;
+    return connection;
 
-   }
+  }
 
 
-  public void release(Connection connectionToRelease) {
+  public void release(TypeConnection connectionToRelease) {
 
-    Connection connection = null;
+    TypeConnection connection = null;
 
-    for(Connection currentConnection : connections){
+    for(TypeConnection currentConnection : connections){
 
       if(connectionToRelease==currentConnection && !connectionToRelease.isAvailable()){
 
@@ -56,8 +57,8 @@ public class Server {
 
         break;
 
-      } 
-      
+      }
+
     }
 
     isNull(connection);
@@ -70,8 +71,9 @@ public class Server {
 
     if(connection == null){
 
-       throw new UnknownConnectionException();
+      throw new NoSuchConnectionException();
 
     }
   }
+
 }

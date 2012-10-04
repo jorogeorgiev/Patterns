@@ -8,220 +8,154 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-
 /**
  * @author georgi.hristov@clouway.com
  */
-
-
 public class ConnectionPoolTest {
 
-  private Server server;
-  private Connection connection;
-  private List<Connection> initialConnections;
-  private List<Connection> acquiredConnections;
-  private Integer initialConnectionsCount;
-  private Integer acquiredConnectionsCount;
-  private Integer elementToAcquire;
 
+  private List<TypeConnection> connections;
+  private List<Connection> acquiredConnections;
+  private Server server;
+  private ConnectionCallBack connectionCallBack;
 
   @Before
   public void setUp() {
 
-    initialConnections = Lists.newArrayList();
+    connections = Lists.newArrayList();
 
     acquiredConnections = Lists.newArrayList();
 
+    connectionCallBack = new ConnectionCallBack();
 
   }
 
 
-  interface CallBack {
+   class ConnectionCallBack{
 
-    Connection getConnection();
+    public Connection callConnection(String connection){
 
-  }
+      if(connection.matches("[0-9]+")){
 
-  class ActiveInstance implements CallBack {
+       return acquiredConnections.get(Integer.valueOf(connection));
 
+      } else if(connection.equals("new")){
 
-    @Override
-    public Connection getConnection() {
+        return new TypeConnectionImpl();
 
-      return new Active();
+      } else{
+
+        return new RefusedConnection();
+
+      }
 
     }
 
   }
 
 
-  class ServerConnection implements CallBack {
-
-    @Override
-    public Connection getConnection() {
-
-      return server.dispatchConnection();
-
-    }
-
-  }
 
 
   @Test
-  public void serverDispatchesActiveConnectionToClient() {
+  public void serverDispatchesConnection() {
 
-    initialConnectionsCount = 1;
+    int initialConnections = 1;
+    int connectionsToAcquire = 1;
+    String connectionNumber = "0";
+    Class connectionTypeClass = TypeConnectionImpl.class;
+    assertDispatch(initialConnections, connectionsToAcquire, connectionNumber, connectionTypeClass);
 
-    acquiredConnectionsCount = 1;
-
-    elementToAcquire = 0;
-
-    setUpServer(initialConnectionsCount);
-
-    acquireConnections(acquiredConnectionsCount);
-
-    assertTrue(acquiredConnections.get(elementToAcquire).getClass().equals(Active.class));
-
-  }
-
-  @Test
-  public void serverDispatchConnectionIfAvailable() {
-
-    initialConnectionsCount = 10;
-
-    acquiredConnectionsCount = 20;
-
-    elementToAcquire = 5;
-
-    setUpServer(initialConnectionsCount);
-
-    acquireConnections(acquiredConnectionsCount);
-
-    assertTrue(acquiredConnections.get(elementToAcquire).getClass().equals(Active.class));
-
-  }
-
-  @Test
-  public void serverDispatchesInactiveConnectionWhenActivesAreExceeded() {
-
-    initialConnectionsCount = 10;
-
-    acquiredConnectionsCount = 20;
-
-    elementToAcquire = 10;
-
-    setUpServer(initialConnectionsCount);
-
-    acquireConnections(acquiredConnectionsCount);
-
-    assertTrue(acquiredConnections.get(elementToAcquire).getClass().equals(Inactive.class));
-
-  }
-
-
-  @Test
-  public void serverDispatchesInactiveConnectionWhenNoActivesAreSet() {
-
-    initialConnectionsCount = 0;
-
-    acquiredConnectionsCount = 1;
-
-    elementToAcquire =0;
-
-    setUpServer(initialConnectionsCount);
-
-    acquireConnections(acquiredConnectionsCount);
-
-    assertTrue(acquiredConnections.get(elementToAcquire).getClass().equals(Inactive.class));
   }
 
 
   @Test
   public void serverDoesNotDispatchSameConnectionTwice() {
 
-    initialConnectionsCount = 1;
-
-    setUpServer(initialConnectionsCount);
-
-    server.dispatchConnection();
-
-    connection = server.dispatchConnection();
-
-    assertTrue(connection.getClass().equals(Inactive.class));
+    int initialConnections = 1;
+    int connectionsToAcquire = 2;
+    String connectionNumber = "1";
+    Class connectionTypeClass = RefusedConnection.class;
+    assertDispatch(initialConnections, connectionsToAcquire, connectionNumber, connectionTypeClass);
 
   }
-
 
   @Test
-  public void serverReleasesAcquiredConnection() {
+  public void serverReleasesDispatchedConnection() {
 
-    initialConnectionsCount = 1;
-
-    setUpServer(initialConnectionsCount);
-
-    connection = new ServerConnection().getConnection();
-
-    server.release(connection);
-
-    assertTrue(connection.isAvailable());
-
+    int initialConnections = 1;
+    int connectionsToAcquire = 1;
+    String connection = "0";
+    Class connectionTypeClass = TypeConnectionImpl.class;
+    assertRelease(initialConnections,connectionsToAcquire,connection,connectionTypeClass);
   }
 
 
-  @Test(expected = UnknownConnectionException.class)
+  @Test (expected = NoSuchConnectionException.class)
+  public void serverDoesNotReleaseConnectionOutsidePool() {
 
-  public void serverDoesNotReleaseConnectionNotFromThePool() {
-
-    initialConnectionsCount = 1;
-
-    setUpServer(initialConnectionsCount);
-
-    connection = new ActiveInstance().getConnection();
-
-    server.release(connection);
-
+    int initialConnections = 1;
+    int connectionsToAcquire = 1;
+    String connectionNumber = "new";
+    Class connectionTypeClass = RefusedConnection.class;
+    assertRelease(initialConnections,connectionsToAcquire,connectionNumber,connectionTypeClass);
   }
 
 
-  @Test(expected = UnknownConnectionException.class)
+  private void initiateServerWithConnections(int count) {
 
-  public void serverDoesNotReleaseSameConnectionTwice() {
+    buildConnections(count);
 
-    initialConnectionsCount = 1;
-
-    setUpServer(initialConnectionsCount);
-
-    connection = new ActiveInstance().getConnection();
-
-    server.release(connection);
-
-    server.release(connection);
-
+    server = new Server(connections);
   }
 
 
-  private void setUpServer(int connectionsCount) {
+  public List<TypeConnection> buildConnections(int connectionCount) {
 
-    evaluateConnections(connectionsCount, initialConnections, new ActiveInstance());
+    for (int i = 1; i <= connectionCount; i++) {
 
-    server = new Server(initialConnections);
+      connections.add(new TypeConnectionImpl());
 
-  }
+    }
 
-
-  private void acquireConnections(int connectionsCount) {
-
-    evaluateConnections(connectionsCount, acquiredConnections, new ServerConnection());
+    return connections;
 
   }
 
-  private void evaluateConnections(int connectionsCount, List<Connection> connections, CallBack connectionCallBack) {
+  private void acquireConnections(int count) {
 
-    for (int i = 0; i < connectionsCount; i++) {
+    for (int i = 0; i < count; i++) {
 
-      connections.add(i, connectionCallBack.getConnection());
+      acquiredConnections.add(server.dispatchConnection());
 
     }
 
   }
+
+
+  private void assertDispatch(int initialConnections, int connectionsToAcquire, String connectionNumber, Class connectionTypeClass) {
+
+    initiateServerWithConnections(initialConnections);
+
+    acquireConnections(connectionsToAcquire);
+
+    assertTrue(connectionCallBack.callConnection(connectionNumber).getClass().equals(connectionTypeClass));
+
+  }
+
+
+  private void assertRelease(int initialConnections, int connectionsToAcquire, String connectionNumber, Class className) {
+
+    initiateServerWithConnections(initialConnections);
+
+    acquireConnections(connectionsToAcquire);
+
+    server.release((TypeConnection)connectionCallBack.callConnection(connectionNumber));
+
+    acquireConnections(1);
+
+    assertTrue(acquiredConnections.get(1).getClass().equals(className));
+
+  }
+
+
 }

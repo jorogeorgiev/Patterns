@@ -7,12 +7,9 @@ import java.util.List;
  */
 public class Server {
 
+  private List<ConnectionType> connections;
 
-  private List<TypeConnection> connections;
-
-  int availableConnection = 0;
-
-  public Server(List<TypeConnection> connections) {
+  public Server(List<ConnectionType> connections) {
 
     this.connections = connections;
 
@@ -22,7 +19,7 @@ public class Server {
 
     Connection connection = new RefusedConnection();
 
-    for (TypeConnection currentConnection : connections) {
+    for (ConnectionType currentConnection : connections) {
 
       if (currentConnection.isAvailable()) {
 
@@ -43,11 +40,11 @@ public class Server {
   }
 
 
-  public void release(TypeConnection connectionToRelease) {
+  public void release(ConnectionType connectionToRelease) {
 
-    TypeConnection connection = null;
+    ConnectionType connection = null;
 
-    for(TypeConnection currentConnection : connections){
+    for(ConnectionType currentConnection : connections){
 
       if(connectionToRelease==currentConnection && !connectionToRelease.isAvailable()){
 

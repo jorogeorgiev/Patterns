@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 public class ConnectionPoolTest {
 
 
-  private List<TypeConnection> connections;
+  private List<ConnectionType> connections;
   private List<Connection> acquiredConnections;
   private Server server;
   private ConnectionCallBack connectionCallBack;
@@ -41,7 +41,7 @@ public class ConnectionPoolTest {
 
       } else if(connection.equals("new")){
 
-        return new TypeConnectionImpl();
+        return new ConnectionTypeImpl();
 
       } else{
 
@@ -62,7 +62,7 @@ public class ConnectionPoolTest {
     int initialConnections = 1;
     int connectionsToAcquire = 1;
     String connectionNumber = "0";
-    Class connectionTypeClass = TypeConnectionImpl.class;
+    Class connectionTypeClass = ConnectionTypeImpl.class;
     assertDispatch(initialConnections, connectionsToAcquire, connectionNumber, connectionTypeClass);
 
   }
@@ -85,7 +85,7 @@ public class ConnectionPoolTest {
     int initialConnections = 1;
     int connectionsToAcquire = 1;
     String connection = "0";
-    Class connectionTypeClass = TypeConnectionImpl.class;
+    Class connectionTypeClass = ConnectionTypeImpl.class;
     assertRelease(initialConnections,connectionsToAcquire,connection,connectionTypeClass);
   }
 
@@ -109,11 +109,11 @@ public class ConnectionPoolTest {
   }
 
 
-  public List<TypeConnection> buildConnections(int connectionCount) {
+  public List<ConnectionType> buildConnections(int connectionCount) {
 
     for (int i = 1; i <= connectionCount; i++) {
 
-      connections.add(new TypeConnectionImpl());
+      connections.add(new ConnectionTypeImpl());
 
     }
 
@@ -149,7 +149,7 @@ public class ConnectionPoolTest {
 
     acquireConnections(connectionsToAcquire);
 
-    server.release((TypeConnection)connectionCallBack.callConnection(connectionNumber));
+    server.release((ConnectionType)connectionCallBack.callConnection(connectionNumber));
 
     acquireConnections(1);
 

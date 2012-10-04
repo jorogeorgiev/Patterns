@@ -5,9 +5,10 @@ package com.clouway.objectpool;
  */
 public interface Connection {
 
-  void defineAvailability(boolean availabilityState);
+  void setAvailability(boolean availabilityState);
 
   boolean isAvailable();
 
   void exploit();
+
 }

@@ -19,56 +19,59 @@ public class Server {
 
   Connection dispatchConnection() {
 
-    Connection connectionToDispatch = new Inactive();
+    Connection connection = new Inactive();
 
-    for (Connection connection : connections) {
+    for (Connection currentConnection : connections) {
 
-      if (connection.isAvailable()) {
+      if (currentConnection.isAvailable()) {
 
-        connection.defineAvailability(false);
+        connection = currentConnection;
 
-        connectionToDispatch = connection;
+        currentConnection.setAvailability(false);
 
         break;
-
-      } else {
-
-        connectionToDispatch = new Inactive();
 
       }
 
     }
 
-     return connectionToDispatch;
+     isNull(connection);
+
+     return connection;
 
    }
 
 
   public void release(Connection connectionToRelease) {
 
-    Connection abs =null;
+    Connection connection = null;
 
-    for(Connection connection : connections){
+    for(Connection currentConnection : connections){
 
-      if(connectionToRelease==connection && !connectionToRelease.isAvailable()){
+      if(connectionToRelease==currentConnection && !connectionToRelease.isAvailable()){
 
-        abs = connectionToRelease;
+        connection = connectionToRelease;
 
-      }
+        connection.setAvailability(true);
 
+        break;
+
+      } 
+      
     }
 
-    if(abs!=null){
+    isNull(connection);
 
-      abs.defineAvailability(true);
+  }
 
-    } else{
 
-      throw new UnknownConnectionException();
+
+  private void isNull(Connection connection) {
+
+    if(connection == null){
+
+       throw new UnknownConnectionException();
 
     }
-
-
-
   }
 }

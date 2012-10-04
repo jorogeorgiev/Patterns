@@ -1,6 +1,7 @@
 package com.clouway.objectpool;
 
 import com.google.common.collect.Lists;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -16,6 +17,24 @@ import static org.junit.Assert.assertTrue;
 public class ConnectionPoolTest {
 
   private Server server;
+  private Connection connection;
+  private List<Connection> initialConnections;
+  private List<Connection> acquiredConnections;
+  private Integer initialConnectionsCount;
+  private Integer acquiredConnectionsCount;
+  private Integer elementToAcquire;
+
+
+  @Before
+  public void setUp() {
+
+    initialConnections = Lists.newArrayList();
+
+    acquiredConnections = Lists.newArrayList();
+
+
+  }
+
 
   interface CallBack {
 
@@ -23,7 +42,7 @@ public class ConnectionPoolTest {
 
   }
 
-  class CreateNewInstance implements CallBack {
+  class ActiveInstance implements CallBack {
 
 
     @Override
@@ -36,7 +55,7 @@ public class ConnectionPoolTest {
   }
 
 
-  class InstanceFromServer implements CallBack {
+  class ServerConnection implements CallBack {
 
     @Override
     public Connection getConnection() {
@@ -51,21 +70,51 @@ public class ConnectionPoolTest {
   @Test
   public void serverDispatchesActiveConnectionToClient() {
 
-    assertConnectionType(1, 1, 0, Active.class);
+    initialConnectionsCount = 1;
+
+    acquiredConnectionsCount = 1;
+
+    elementToAcquire = 0;
+
+    setUpServer(initialConnectionsCount);
+
+    acquireConnections(acquiredConnectionsCount);
+
+    assertTrue(acquiredConnections.get(elementToAcquire).getClass().equals(Active.class));
 
   }
 
   @Test
-  public void serverDispatchConncetionIfAvaliable() {
+  public void serverDispatchConnectionIfAvailable() {
 
-    assertConnectionType(10, 20, 5, Active.class);
+    initialConnectionsCount = 10;
+
+    acquiredConnectionsCount = 20;
+
+    elementToAcquire = 5;
+
+    setUpServer(initialConnectionsCount);
+
+    acquireConnections(acquiredConnectionsCount);
+
+    assertTrue(acquiredConnections.get(elementToAcquire).getClass().equals(Active.class));
 
   }
 
   @Test
   public void serverDispatchesInactiveConnectionWhenActivesAreExceeded() {
 
-    assertConnectionType(10, 20, 10, Inactive.class);
+    initialConnectionsCount = 10;
+
+    acquiredConnectionsCount = 20;
+
+    elementToAcquire = 10;
+
+    setUpServer(initialConnectionsCount);
+
+    acquireConnections(acquiredConnectionsCount);
+
+    assertTrue(acquiredConnections.get(elementToAcquire).getClass().equals(Inactive.class));
 
   }
 
@@ -73,41 +122,49 @@ public class ConnectionPoolTest {
   @Test
   public void serverDispatchesInactiveConnectionWhenNoActivesAreSet() {
 
-    assertConnectionType(0, 1, 0, Inactive.class);
+    initialConnectionsCount = 0;
 
+    acquiredConnectionsCount = 1;
+
+    elementToAcquire =0;
+
+    setUpServer(initialConnectionsCount);
+
+    acquireConnections(acquiredConnectionsCount);
+
+    assertTrue(acquiredConnections.get(elementToAcquire).getClass().equals(Inactive.class));
   }
+
 
   @Test
   public void serverDoesNotDispatchSameConnectionTwice() {
 
-    server = new Server(setUpAvailableConnections(1));
+    initialConnectionsCount = 1;
+
+    setUpServer(initialConnectionsCount);
 
     server.dispatchConnection();
 
-    Connection connection2 = server.dispatchConnection();
+    connection = server.dispatchConnection();
 
-    assertTrue(connection2.getClass().equals(Inactive.class));
+    assertTrue(connection.getClass().equals(Inactive.class));
 
   }
+
 
   @Test
   public void serverReleasesAConnection() {
 
-    server = new Server(setUpAvailableConnections(2));
+    initialConnectionsCount = 1;
 
-    Connection connection1 = server.dispatchConnection();
+    setUpServer(initialConnectionsCount);
 
-    Connection connection2 = server.dispatchConnection();
+    connection = new ServerConnection().getConnection();
 
-    Connection connection3 = server.dispatchConnection();
+    server.release(connection);
 
-    assertTrue(connection3.getClass().equals(Inactive.class));
+    assertTrue(connection.isAvailable());
 
-    server.release(connection2);
-
-    connection3 = server.dispatchConnection();
-
-    assertTrue(connection3.getClass().equals(Active.class));
   }
 
 
@@ -115,66 +172,56 @@ public class ConnectionPoolTest {
 
   public void serverThrowExceptionOnUnknownConnectionRelease() {
 
-    server = new Server(setUpAvailableConnections(1));
+    initialConnectionsCount = 1;
 
-    Connection connection = new Active();
+    setUpServer(initialConnectionsCount);
+
+    connection = new ActiveInstance().getConnection();
 
     server.release(connection);
 
   }
 
-  @Test (expected = UnknownConnectionException.class)
+
+  @Test(expected = UnknownConnectionException.class)
+
   public void serverDoesNotReleaseSameConnectionTwice() {
 
-    server = new Server(setUpAvailableConnections(2));
+    initialConnectionsCount = 1;
 
-    Connection connection1 = server.dispatchConnection();
+    setUpServer(initialConnectionsCount);
 
-    Connection connection2 = server.dispatchConnection();
+    connection = new ActiveInstance().getConnection();
 
-    Connection connection3 = server.dispatchConnection();
+    server.release(connection);
 
-    server.release(connection2);
-
-    server.release(connection2);
+    server.release(connection);
 
   }
 
 
-  private List<Connection> acquireConnections(int connectionsToAcquire) {
+  private void setUpServer(int connectionsCount) {
 
-    return getConnection(connectionsToAcquire, new InstanceFromServer());
+    buildConnections(connectionsCount, initialConnections, new ActiveInstance());
 
-  }
-
-  private List<Connection> setUpAvailableConnections(int numberAvailableConnections) {
-
-    return getConnection(numberAvailableConnections, new CreateNewInstance());
+    server = new Server(initialConnections);
 
   }
 
 
-  private List<Connection> getConnection(int connectionsToAcquire, CallBack connection) {
+  private void acquireConnections(int connectionsCount) {
 
-    List<Connection> connections = Lists.newArrayList();
+    buildConnections(connectionsCount, acquiredConnections, new ServerConnection());
 
-    for (int i = 0; i < connectionsToAcquire; i++) {
+  }
 
-      connections.add(connection.getConnection());
+  private void buildConnections(int connectionsCount, List<Connection> connections, CallBack connectionCallBack) {
+
+    for (int i = 0; i < connectionsCount; i++) {
+
+      connections.add(i, connectionCallBack.getConnection());
 
     }
-    return connections;
 
   }
-
-
-  private void assertConnectionType(int availableConnections, int acquiredConnections, int connectionNumber, Class classType) {
-
-    server = new Server(setUpAvailableConnections(availableConnections));
-
-    assertTrue(acquireConnections(acquiredConnections).get(connectionNumber).getClass().equals(classType));
-
-  }
-
-
 }

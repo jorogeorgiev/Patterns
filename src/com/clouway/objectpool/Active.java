@@ -5,18 +5,18 @@ package com.clouway.objectpool;
  */
 public class Active implements Connection{
 
-  private boolean availabilityState =true;
+  private boolean available =true;
 
   @Override
-  public void defineAvailability(boolean availabilityState) {
+  public void setAvailability(boolean availabilityState) {
 
-    this.availabilityState=availabilityState;
+    this.available =availabilityState;
 
   }
 
   public boolean isAvailable(){
 
-    return availabilityState;
+    return available;
 
   }
 

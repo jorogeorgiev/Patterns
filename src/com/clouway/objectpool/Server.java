@@ -7,9 +7,9 @@ import java.util.List;
  */
 public class Server {
 
-  private List<ConnectionType> connections;
+  private List<PoolingConnection> connections;
 
-  public Server(List<ConnectionType> connections) {
+  public Server(List<PoolingConnection> connections) {
 
     this.connections = connections;
 
@@ -19,7 +19,7 @@ public class Server {
 
     Connection connection = new RefusedConnection();
 
-    for (ConnectionType currentConnection : connections) {
+    for (PoolingConnection currentConnection : connections) {
 
       if (currentConnection.isAvailable()) {
 
@@ -33,18 +33,16 @@ public class Server {
 
     }
 
-    isNull(connection);
-
     return connection;
 
   }
 
 
-  public void release(ConnectionType connectionToRelease) {
+  public void release(PoolingConnection connectionToRelease) {
 
-    ConnectionType connection = null;
+    PoolingConnection connection = null;
 
-    for(ConnectionType currentConnection : connections){
+    for(PoolingConnection currentConnection : connections){
 
       if(connectionToRelease==currentConnection && !connectionToRelease.isAvailable()){
 
@@ -68,7 +66,7 @@ public class Server {
 
     if(connection == null){
 
-      throw new NoSuchConnectionException();
+      throw new NoSuchPoolingConnetionException();
 
     }
   }

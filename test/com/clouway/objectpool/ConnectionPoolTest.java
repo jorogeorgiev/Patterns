@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 public class ConnectionPoolTest {
 
 
-  private List<ConnectionType> connections;
+  private List<PoolingConnection> connections;
   private List<Connection> acquiredConnections;
   private Server server;
   private ConnectionCallBack connectionCallBack;
@@ -41,7 +41,7 @@ public class ConnectionPoolTest {
 
       } else if(connection.equals("new")){
 
-        return new ConnectionTypeImpl();
+        return new PoolingConnectionImpl();
 
       } else{
 
@@ -62,7 +62,7 @@ public class ConnectionPoolTest {
     int initialConnections = 1;
     int connectionsToAcquire = 1;
     String connectionNumber = "0";
-    Class connectionTypeClass = ConnectionTypeImpl.class;
+    Class connectionTypeClass = PoolingConnectionImpl.class;
     assertDispatch(initialConnections, connectionsToAcquire, connectionNumber, connectionTypeClass);
 
   }
@@ -85,12 +85,12 @@ public class ConnectionPoolTest {
     int initialConnections = 1;
     int connectionsToAcquire = 1;
     String connection = "0";
-    Class connectionTypeClass = ConnectionTypeImpl.class;
+    Class connectionTypeClass = PoolingConnectionImpl.class;
     assertRelease(initialConnections,connectionsToAcquire,connection,connectionTypeClass);
   }
 
 
-  @Test (expected = NoSuchConnectionException.class)
+  @Test (expected = NoSuchPoolingConnetionException.class)
   public void serverDoesNotReleaseConnectionOutsidePool() {
 
     int initialConnections = 1;
@@ -109,11 +109,11 @@ public class ConnectionPoolTest {
   }
 
 
-  public List<ConnectionType> buildConnections(int connectionCount) {
+  public List<PoolingConnection> buildConnections(int connectionCount) {
 
     for (int i = 1; i <= connectionCount; i++) {
 
-      connections.add(new ConnectionTypeImpl());
+      connections.add(new PoolingConnectionImpl());
 
     }
 
@@ -149,7 +149,7 @@ public class ConnectionPoolTest {
 
     acquireConnections(connectionsToAcquire);
 
-    server.release((ConnectionType)connectionCallBack.callConnection(connectionNumber));
+    server.release((PoolingConnection)connectionCallBack.callConnection(connectionNumber));
 
     acquireConnections(1);
 

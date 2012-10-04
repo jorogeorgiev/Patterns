@@ -153,7 +153,7 @@ public class ConnectionPoolTest {
 
 
   @Test
-  public void serverReleasesAConnection() {
+  public void serverReleasesAcquiredConnection() {
 
     initialConnectionsCount = 1;
 
@@ -170,7 +170,7 @@ public class ConnectionPoolTest {
 
   @Test(expected = UnknownConnectionException.class)
 
-  public void serverThrowExceptionOnUnknownConnectionRelease() {
+  public void serverDoesNotReleaseConnectionNotFromThePool() {
 
     initialConnectionsCount = 1;
 
@@ -202,7 +202,7 @@ public class ConnectionPoolTest {
 
   private void setUpServer(int connectionsCount) {
 
-    buildConnections(connectionsCount, initialConnections, new ActiveInstance());
+    evaluateConnections(connectionsCount, initialConnections, new ActiveInstance());
 
     server = new Server(initialConnections);
 
@@ -211,11 +211,11 @@ public class ConnectionPoolTest {
 
   private void acquireConnections(int connectionsCount) {
 
-    buildConnections(connectionsCount, acquiredConnections, new ServerConnection());
+    evaluateConnections(connectionsCount, acquiredConnections, new ServerConnection());
 
   }
 
-  private void buildConnections(int connectionsCount, List<Connection> connections, CallBack connectionCallBack) {
+  private void evaluateConnections(int connectionsCount, List<Connection> connections, CallBack connectionCallBack) {
 
     for (int i = 0; i < connectionsCount; i++) {
 

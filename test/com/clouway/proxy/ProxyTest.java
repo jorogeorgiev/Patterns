@@ -1,5 +1,6 @@
 package com.clouway.proxy;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -14,8 +15,8 @@ import static org.mockito.Mockito.verify;
  */
 public class ProxyTest {
 
-  private final String DATABASE_RECORD = "DATABASE";
-  private String RECORDED_VALUE;
+   private DatabaseAccessor accessor;
+   private  ProxySQLDatabaseAccessor proxyAccessor;
 
 
   interface DatabaseAccessor {
@@ -26,58 +27,18 @@ public class ProxyTest {
 
   }
 
-  class Database {
-
-    public void write(String query) {
-
-      RECORDED_VALUE = query;
-
-    }
-
-    public String read() {
-
-      return DATABASE_RECORD;
-
-    }
+  @Before
+  public void setUp(){
+    proxyAccessor = new ProxySQLDatabaseAccessor("");
+    accessor = mock(DatabaseAccessor.class);
 
   }
 
-
-  class SQLDatabaseAccessor implements DatabaseAccessor {
-
-    private Database database;
-
-    public SQLDatabaseAccessor(String dbFilePath) {
-
-      database = loadDatabase(dbFilePath);
-
-    }
-
-    private Database loadDatabase(String dbFilePath) {
-
-      // SOME IMPL FOR LOADING THE DB INTO MEMORY
-      return new Database();
-    }
-
-
-    @Override
-    public void writeToDatabase(String someQuery) {
-
-      database.write(someQuery);
-
-    }
-
-    @Override
-    public String readFromDataBase() {
-      return database.read();
-    }
-
-  }
 
 
   class ProxySQLDatabaseAccessor implements DatabaseAccessor {
 
-    private SQLDatabaseAccessor sqlDatabaseAccessor = null;
+    private DatabaseAccessor sqlDatabaseAccessor = null;
 
     private String dbFilePath;
 
@@ -110,7 +71,7 @@ public class ProxyTest {
 
       if (sqlDatabaseAccessor == null) {
 
-        sqlDatabaseAccessor = new SQLDatabaseAccessor(dbFilePath);
+        sqlDatabaseAccessor = accessor;
 
       }
 
@@ -118,44 +79,12 @@ public class ProxyTest {
 
   }
 
-  class FailedSQLProxyDatabaseAccessor implements  DatabaseAccessor{
-
-    private SQLDatabaseAccessor sqlDatabaseAccessor = null;
-
-    private String dbFilePath;
-
-    public FailedSQLProxyDatabaseAccessor(String dbFilePath) {
-
-      this.dbFilePath = dbFilePath;
-
-    }
-
-
-    @Override
-    public void writeToDatabase(String someQuery) {
-
-      sqlDatabaseAccessor.writeToDatabase(someQuery);
-
-    }
-
-    @Override
-    public String readFromDataBase() {
-
-      return  sqlDatabaseAccessor.readFromDataBase();
-
-    }
-  }
-
-
-
-
-
   @Test
   public void proxyReadsFromDatabaseViaRealImpl(){
 
-    ProxySQLDatabaseAccessor accessor = new ProxySQLDatabaseAccessor("");
+    proxyAccessor.readFromDataBase() ;
 
-    assertThat(accessor.readFromDataBase(),is(DATABASE_RECORD));
+    verify(accessor).readFromDataBase();
 
   }
 
@@ -163,35 +92,10 @@ public class ProxyTest {
   @Test
   public void proxyWritesToDatabaseViaRealImpl(){
 
-    String query = "SELECT FROM * WHERE Georgi";
+    proxyAccessor.writeToDatabase("");
 
-    ProxySQLDatabaseAccessor accessor = new ProxySQLDatabaseAccessor("");
-
-    accessor.writeToDatabase(query);
-
-    assertThat(RECORDED_VALUE,is(query));
+    verify(accessor).writeToDatabase("");
 
   }
-
-  @Test(expected = NullPointerException.class)
-
-  public void proxyThrowsExceptionOnReadWhenThereIsNoRealObject(){
-
-   FailedSQLProxyDatabaseAccessor accessor = new FailedSQLProxyDatabaseAccessor("");
-
-   accessor.readFromDataBase();
-
-  }
-
-  @Test(expected = NullPointerException.class)
-
-  public void proxyThrowsExceptionOnWriteWhenThereIsNoRealObject(){
-
-   FailedSQLProxyDatabaseAccessor accessor = new FailedSQLProxyDatabaseAccessor("");
-
-   accessor.writeToDatabase("");
-
-  }
-
 
 }

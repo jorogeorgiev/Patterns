@@ -19,15 +19,24 @@ public class ObserverTest {
     List<StockObserver> observers = Lists.newArrayList();
 
 
-    public void addProduct(Product product) {
 
-       notifyObservers(product);
-
-    }
 
     public void addObserver(StockObserver observer){
 
       observers.add(observer);
+
+    }
+
+
+    public void addProduct(Product product) {
+
+      notifyObservers(product);
+
+    }
+
+    public void sellProduct(Product product) {
+
+      notifyObservers(product);
 
     }
 
@@ -39,13 +48,10 @@ public class ObserverTest {
 
       }
 
-
     }
 
 
-    public void sellProduct(Product apples) {
 
-    }
   }
 
 

@@ -21,12 +21,24 @@ public class ObserverTest {
 
     public void addProduct(Product product) {
 
+       notifyObservers(product);
+
     }
 
     public void addObserver(StockObserver observer){
 
-
       observers.add(observer);
+
+    }
+
+    public void notifyObservers(Product product){
+
+      for(StockObserver observer : observers){
+
+        observer.notifyAbout(product);
+
+      }
+
 
     }
 
@@ -61,9 +73,9 @@ public class ObserverTest {
 
     Store store = new Store();
 
-    store.addProduct(apples);
-
     store.addObserver(observer);
+
+    store.addProduct(apples);
 
     verify(observer).notifyAbout(apples);
 

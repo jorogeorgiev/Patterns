@@ -16,30 +16,74 @@ public class ObserverTest {
 
   private Store store;
 
-  private StockObserver observer;
+  private InventoryObserver observer;
 
   private Product apples;
+
+  private Partner shopPartner;
+
+  private InventoryObserverImpl metroObserver ;
+
 
   @Before
   public void setUp() {
 
     store = new Store();
 
-    observer = mock(StockObserver.class);
+    observer = mock(InventoryObserver.class);
 
     store.attachObserver(observer);
 
     apples = mock(Product.class);
 
+    shopPartner = mock(Partner.class);
+
+    metroObserver = new InventoryObserverImpl();
+    \
+    metroObserver.addPartner(shopPartner);
 
   }
 
+
+  interface Notification {
+
+    void notifyObservers(List<InventoryObserver> observers, Product product);
+
+  }
+
+  class SellNotification implements Notification {
+
+    @Override
+    public void notifyObservers(List<InventoryObserver> observers, Product product) {
+      for(InventoryObserver observer : observers){
+
+        observer.notifyOnSell(product);
+
+      }
+    }
+  }
+
+  class SupplyNotification implements Notification {
+
+    @Override
+    public void notifyObservers(List<InventoryObserver> observers, Product product) {
+     for(InventoryObserver observer : observers){
+
+       observer.notifyOnSupply(product);
+
+     }
+    }
+  }
+
+
+
   private class Store {
 
-    List<StockObserver> observers = Lists.newArrayList();
+    private List<InventoryObserver> observers = Lists.newArrayList();
+    private SellNotification sellNotification = new SellNotification();
+    private SupplyNotification supplyNotification = new SupplyNotification();
 
-
-    public void attachObserver(StockObserver observer) {
+    public void attachObserver(InventoryObserver observer) {
 
       observers.add(observer);
 
@@ -48,53 +92,56 @@ public class ObserverTest {
 
     public void addProduct(Product product) {
 
-      notifyObservers(product);
+     supplyNotification.notifyObservers(observers,product);
 
     }
 
     public void sellProduct(Product product) {
 
-      notifyObservers(product);
+      sellNotification.notifyObservers(observers,product);
 
     }
-
-    public void notifyObservers(Product product) {
-
-      for (StockObserver observer : observers) {
-
-        observer.notifyAbout(product);
-
-      }
-
-    }
-
 
   }
 
 
-  private interface StockObserver {
+  private interface InventoryObserver {
 
 
-    void notifyAbout(Product product);
+    void notifyOnSell(Product product);
 
+    void notifyOnSupply(Product product);
 
     void addPartner(Partner shopPartner);
 
   }
 
-  class MetroStockObserver implements StockObserver {
+
+
+
+
+
+  class InventoryObserverImpl implements InventoryObserver {
 
     private List<Partner> partners = Lists.newArrayList();
 
-    @Override
-    public void notifyAbout(Product product) {
 
+    @Override
+    public void notifyOnSell(Product product) {
       for (Partner partner : partners) {
 
-        partner.notifyAbout(product);
+        partner.notifyOnSell(product);
 
       }
+    }
 
+    @Override
+    public void notifyOnSupply(Product product) {
+      for (Partner partner : partners) {
+
+        partner.notifyOnSupply(product);
+
+      }
     }
 
     @Override
@@ -113,16 +160,18 @@ public class ObserverTest {
 
   interface Partner {
 
-    void notifyAbout(Product product);
+    void notifyOnSell(Product product);
+
+    void notifyOnSupply(Product product);
 
   }
 
   @Test
-  public void storeNotifiesObserversWhenNewProductAdded() {
+  public void storeNotifiesObserversWhenNewProductSupplied() {
 
     store.addProduct(apples);
 
-    verify(observer).notifyAbout(apples);
+    verify(observer).notifyOnSupply(apples);
 
   }
 
@@ -132,22 +181,26 @@ public class ObserverTest {
 
     store.sellProduct(apples);
 
-    verify(observer).notifyAbout(apples);
+    verify(observer).notifyOnSell(apples);
 
   }
 
   @Test
-  public void observerNotifiesPartnersAboutProductChange() {
+  public void observerNotifiesPartnersOnProductSupply() {
 
-    Partner shopPartner = mock(Partner.class);
+    metroObserver.notifyOnSupply(apples);
 
-    MetroStockObserver metroObserver = new MetroStockObserver();
+    verify(shopPartner).notifyOnSupply(apples);
 
-    metroObserver.addPartner(shopPartner);
+  }
 
-    metroObserver.notifyAbout(apples);
+  @Test
+  public void observerNotifiesPartnersOnProductSell() {
 
-    verify(shopPartner).notifyAbout(apples);
+
+    metroObserver.notifyOnSell(apples);
+
+    verify(shopPartner).notifyOnSell(apples);
 
   }
 

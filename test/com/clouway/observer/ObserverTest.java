@@ -31,77 +31,42 @@ public class ObserverTest {
 
     apples = mock(Product.class);
 
-
-
-
   }
-
-
-  interface Notification {
-
-    void notifyObservers(List<Partner> observers, Product product);
-
-  }
-
-  class SellNotification implements Notification {
-
-    @Override
-    public void notifyObservers(List<Partner> partners, Product product) {
-      for(Partner partner : partners){
-
-        partner.onNewSell(product);
-
-      }
-    }
-  }
-
-  class SupplyNotification implements Notification {
-
-    @Override
-    public void notifyObservers(List<Partner> partners, Product product) {
-
-     for(Partner partner : partners){
-
-       partner.onNewSupply(product);
-
-     }
-    }
-  }
-
 
 
   private class Store {
 
-    private List<Partner> observers = Lists.newArrayList();
-
-    private SellNotification sellNotification = new SellNotification();
-
-    private SupplyNotification supplyNotification = new SupplyNotification();
+    private List<Partner> partners = Lists.newArrayList();
 
 
     public void attachObserver(Partner partner) {
 
-      observers.add(partner);
+      partners.add(partner);
 
     }
 
 
-    public void addProduct(Product product) {
+    public void supplyProduct(Product product) {
 
-     supplyNotification.notifyObservers(observers,product);
+      for(Partner partner : partners){
+
+        partner.onNewSupply(product);
+
+      }
 
     }
 
     public void sellProduct(Product product) {
 
-      sellNotification.notifyObservers(observers,product);
+      for(Partner partner : partners){
+
+        partner.onNewSell(product);
+
+      }
 
     }
 
   }
-
-
-
 
 
 
@@ -121,7 +86,7 @@ public class ObserverTest {
   @Test
   public void storeNotifiesObserversWhenNewProductSupplied() {
 
-    store.addProduct(apples);
+    store.supplyProduct(apples);
 
     verify(shopPartner).onNewSupply(apples);
 

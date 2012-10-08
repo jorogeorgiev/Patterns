@@ -16,48 +16,40 @@ public class ObserverTest {
 
   private Store store;
 
-  private InventoryObserver observer;
-
   private Product apples;
 
   private Partner shopPartner;
-
-  private InventoryObserverImpl metroObserver ;
-
 
   @Before
   public void setUp() {
 
     store = new Store();
 
-    observer = mock(InventoryObserver.class);
+    shopPartner = mock(Partner.class);
 
-    store.attachObserver(observer);
+    store.attachObserver(shopPartner);
 
     apples = mock(Product.class);
 
-    shopPartner = mock(Partner.class);
 
-    metroObserver = new InventoryObserverImpl();
 
-    metroObserver.addPartner(shopPartner);
 
   }
 
 
   interface Notification {
 
-    void notifyObservers(List<InventoryObserver> observers, Product product);
+    void notifyObservers(List<Partner> observers, Product product);
 
   }
 
   class SellNotification implements Notification {
 
     @Override
-    public void notifyObservers(List<InventoryObserver> observers, Product product) {
-      for(InventoryObserver observer : observers){
+    public void notifyObservers(List<Partner> partners, Product product) {
+      for(Partner partner : partners){
 
-        observer.notifyOnSell(product);
+        partner.onNewSell(product);
 
       }
     }
@@ -66,10 +58,11 @@ public class ObserverTest {
   class SupplyNotification implements Notification {
 
     @Override
-    public void notifyObservers(List<InventoryObserver> observers, Product product) {
-     for(InventoryObserver observer : observers){
+    public void notifyObservers(List<Partner> partners, Product product) {
 
-       observer.notifyOnSupply(product);
+     for(Partner partner : partners){
+
+       partner.onNewSupply(product);
 
      }
     }
@@ -79,13 +72,16 @@ public class ObserverTest {
 
   private class Store {
 
-    private List<InventoryObserver> observers = Lists.newArrayList();
+    private List<Partner> observers = Lists.newArrayList();
+
     private SellNotification sellNotification = new SellNotification();
+
     private SupplyNotification supplyNotification = new SupplyNotification();
 
-    public void attachObserver(InventoryObserver observer) {
 
-      observers.add(observer);
+    public void attachObserver(Partner partner) {
+
+      observers.add(partner);
 
     }
 
@@ -105,52 +101,8 @@ public class ObserverTest {
   }
 
 
-  private interface InventoryObserver {
 
 
-    void notifyOnSell(Product product);
-
-    void notifyOnSupply(Product product);
-
-    void addPartner(Partner shopPartner);
-
-  }
-
-
-
-
-
-
-  class InventoryObserverImpl implements InventoryObserver {
-
-    private List<Partner> partners = Lists.newArrayList();
-
-
-    @Override
-    public void notifyOnSell(Product product) {
-      for (Partner partner : partners) {
-
-        partner.notifyOnSell(product);
-
-      }
-    }
-
-    @Override
-    public void notifyOnSupply(Product product) {
-      for (Partner partner : partners) {
-
-        partner.notifyOnSupply(product);
-
-      }
-    }
-
-    @Override
-    public void addPartner(Partner partner) {
-
-      partners.add(partner);
-
-    }
-  }
 
 
   interface Product {
@@ -160,9 +112,9 @@ public class ObserverTest {
 
   interface Partner {
 
-    void notifyOnSell(Product product);
+    void onNewSell(Product product);
 
-    void notifyOnSupply(Product product);
+    void onNewSupply(Product product);
 
   }
 
@@ -171,7 +123,7 @@ public class ObserverTest {
 
     store.addProduct(apples);
 
-    verify(observer).notifyOnSupply(apples);
+    verify(shopPartner).onNewSupply(apples);
 
   }
 
@@ -181,26 +133,7 @@ public class ObserverTest {
 
     store.sellProduct(apples);
 
-    verify(observer).notifyOnSell(apples);
-
-  }
-
-  @Test
-  public void observerNotifiesPartnersOnProductSupply() {
-
-    metroObserver.notifyOnSupply(apples);
-
-    verify(shopPartner).notifyOnSupply(apples);
-
-  }
-
-  @Test
-  public void observerNotifiesPartnersOnProductSell() {
-
-
-    metroObserver.notifyOnSell(apples);
-
-    verify(shopPartner).notifyOnSell(apples);
+    verify(shopPartner).onNewSell(apples);
 
   }
 

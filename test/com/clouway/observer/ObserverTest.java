@@ -27,7 +27,7 @@ public class ObserverTest {
 
     shopPartner = mock(Partner.class);
 
-    store.attachObserver(shopPartner);
+    store.addPartner(shopPartner);
 
     apples = mock(Product.class);
 
@@ -39,7 +39,7 @@ public class ObserverTest {
     private List<Partner> partners = Lists.newArrayList();
 
 
-    public void attachObserver(Partner partner) {
+    public void addPartner(Partner partner) {
 
       partners.add(partner);
 

@@ -1,10 +1,8 @@
 package com.clouway.observer;
 
 import com.google.common.collect.Lists;
-import com.sun.org.apache.bcel.internal.generic.StoreInstruction;
 import org.junit.Test;
 
-import java.applet.AppletStub;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -18,9 +16,21 @@ public class ObserverTest {
 
   private class Store {
 
-    public void add(Product product) {
+    List<StockObserver> observers = Lists.newArrayList();
+
+
+    public void addProduct(Product product) {
 
     }
+
+    public void addObserver(StockObserver observer){
+
+
+      observers.add(observer);
+
+    }
+
+
   }
 
 
@@ -49,13 +59,11 @@ public class ObserverTest {
 
     Product apples = mock(Product.class);
 
-    List<StockObserver> observers = Lists.newArrayList();
-
-    observers.add(observer);
-
     Store store = new Store();
 
-    store.add(apples);
+    store.addProduct(apples);
+
+    store.addObserver(observer);
 
     verify(observer).notifyAbout(apples);
 

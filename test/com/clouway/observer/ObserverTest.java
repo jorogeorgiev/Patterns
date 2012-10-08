@@ -43,6 +43,9 @@ public class ObserverTest {
     }
 
 
+    public void sellProduct(Product apples) {
+
+    }
   }
 
 
@@ -78,6 +81,26 @@ public class ObserverTest {
     store.addProduct(apples);
 
     verify(observer).notifyAbout(apples);
+
+  }
+
+
+  @Test
+  public void storeUpdatesObserversWhenProductSold(){
+
+    StockObserver observer = mock(StockObserver.class);
+
+    Product apples = mock(Product.class);
+
+    Store store = new Store();
+
+    store.addObserver(observer);
+
+    store.sellProduct(apples);
+
+    verify(observer).notifyAbout(apples);
+
+
 
   }
 

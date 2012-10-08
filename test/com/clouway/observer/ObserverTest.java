@@ -1,6 +1,7 @@
 package com.clouway.observer;
 
 import com.google.common.collect.Lists;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -13,15 +14,35 @@ import static org.mockito.Mockito.verify;
  */
 public class ObserverTest {
 
+  private Store store;
+
+  private StockObserver observer;
+
+  private Product apples;
+
+
+
+  @Before
+  public void setUp() {
+
+    store = new Store();
+
+    observer = mock(StockObserver.class);
+
+    store.addObserver(observer);
+
+    apples = mock(Product.class);
+
+
+  }
+
 
   private class Store {
 
     List<StockObserver> observers = Lists.newArrayList();
 
 
-
-
-    public void addObserver(StockObserver observer){
+    public void addObserver(StockObserver observer) {
 
       observers.add(observer);
 
@@ -40,9 +61,9 @@ public class ObserverTest {
 
     }
 
-    public void notifyObservers(Product product){
+    public void notifyObservers(Product product) {
 
-      for(StockObserver observer : observers){
+      for (StockObserver observer : observers) {
 
         observer.notifyAbout(product);
 
@@ -51,9 +72,7 @@ public class ObserverTest {
     }
 
 
-
   }
-
 
 
   private interface StockObserver {
@@ -76,14 +95,6 @@ public class ObserverTest {
   @Test
   public void storeUpdatesObserversWhenNewProductAdded() {
 
-    StockObserver observer = mock(StockObserver.class);
-
-    Product apples = mock(Product.class);
-
-    Store store = new Store();
-
-    store.addObserver(observer);
-
     store.addProduct(apples);
 
     verify(observer).notifyAbout(apples);
@@ -92,21 +103,11 @@ public class ObserverTest {
 
 
   @Test
-  public void storeUpdatesObserversWhenProductSold(){
-
-    StockObserver observer = mock(StockObserver.class);
-
-    Product apples = mock(Product.class);
-
-    Store store = new Store();
-
-    store.addObserver(observer);
+  public void storeUpdatesObserversWhenProductSold() {
 
     store.sellProduct(apples);
 
     verify(observer).notifyAbout(apples);
-
-
 
   }
 

@@ -39,7 +39,7 @@ public class ObserverTest {
     shopPartner = mock(Partner.class);
 
     metroObserver = new InventoryObserverImpl();
-    \
+
     metroObserver.addPartner(shopPartner);
 
   }
